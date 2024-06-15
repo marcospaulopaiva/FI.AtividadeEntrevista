@@ -1,4 +1,16 @@
-﻿CREATE PROC FI_SP_AltCliente
+﻿IF EXISTS(SELECT 1 FROM SYSOBJECTS WHERE [Name] = 'FI_SP_AltCliente' AND [type] = 'P')
+BEGIN
+    DROP PROCEDURE [dbo].[FI_SP_AltCliente]
+	PRINT 'Procedure FI_SP_AltCliente foi descartado.'
+END
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROC FI_SP_AltCliente
     @NOME          VARCHAR (50) ,
     @SOBRENOME     VARCHAR (255),
     @NACIONALIDADE VARCHAR (50) ,
@@ -8,6 +20,7 @@
     @LOGRADOURO    VARCHAR (500),
     @EMAIL         VARCHAR (2079),
     @TELEFONE      VARCHAR (15),
+	@CPF           VARCHAR (11),
 	@Id           BIGINT
 AS
 BEGIN
@@ -21,6 +34,13 @@ BEGIN
 		CIDADE = @CIDADE, 
 		LOGRADOURO = @LOGRADOURO, 
 		EMAIL = @EMAIL, 
-		TELEFONE = @TELEFONE
+		TELEFONE = @TELEFONE,
+		CPF = @CPF
 	WHERE Id = @Id
 END
+
+GO
+
+PRINT 'Procedure FI_SP_AltCliente foi criado.'
+
+GO

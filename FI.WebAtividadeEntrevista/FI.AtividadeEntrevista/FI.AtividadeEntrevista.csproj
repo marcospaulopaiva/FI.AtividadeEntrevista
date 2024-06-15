@@ -54,6 +54,8 @@
     <Content Include="DAL\Clientes\Procedures\FI_SP_DelCliente.sql" />
     <Content Include="DAL\Clientes\Procedures\FI_SP_IncCliente.sql" />
     <Content Include="DAL\Clientes\Procedures\FI_SP_PesqCliente.sql" />
+    <Content Include="DAL\Clientes\Scripts\FI_Script_Add_Column_Cliente.sql" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
