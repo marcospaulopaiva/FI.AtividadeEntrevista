@@ -26,6 +26,17 @@ namespace WebAtividadeEntrevista.Controllers
         {
             BoCliente bo = new BoCliente();
 
+            if (!this.ModelState.IsValid) { }
+            
+            else if (!bo.ValidaCPF(model.CPF))
+            {
+                ModelState.AddModelError("CPF", "CPF Inválido");
+            }
+            else if (bo.VerificarExistencia(model.CPF))
+            {
+                ModelState.AddModelError("CPF", "CPF já Cadastrado");
+            }
+
             if (!this.ModelState.IsValid)
             {
                 List<string> erros = (from item in ModelState.Values
