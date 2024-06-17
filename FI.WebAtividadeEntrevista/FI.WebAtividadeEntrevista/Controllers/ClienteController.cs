@@ -1,5 +1,6 @@
 ﻿using FI.AtividadeEntrevista.BLL;
 using FI.AtividadeEntrevista.DML;
+using FI.WebAtividadeEntrevista.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,11 +29,11 @@ namespace WebAtividadeEntrevista.Controllers
 
             if (!this.ModelState.IsValid) { }
             
-            else if (!bo.ValidaCPF(model.CPF))
+            else if (!Util.ValidaCPF(model.CPF))
             {
                 ModelState.AddModelError("CPF", "CPF Inválido");
             }
-            else if (bo.VerificarExistencia(model.CPF))
+            else if (bo.VerificarExistencia(Util.RemoveMascara(model.CPF)))
             {
                 ModelState.AddModelError("CPF", "CPF já Cadastrado");
             }
@@ -48,7 +49,7 @@ namespace WebAtividadeEntrevista.Controllers
             }
             else
             {
-                
+
                 model.Id = bo.Incluir(new Cliente()
                 {                    
                     CEP = model.CEP,
@@ -60,7 +61,7 @@ namespace WebAtividadeEntrevista.Controllers
                     Nome = model.Nome,
                     Sobrenome = model.Sobrenome,
                     Telefone = model.Telefone,
-                    CPF = model.CPF
+                    CPF = Util.RemoveMascara(model.CPF)
                 });
 
            
@@ -96,7 +97,7 @@ namespace WebAtividadeEntrevista.Controllers
                     Nome = model.Nome,
                     Sobrenome = model.Sobrenome,
                     Telefone = model.Telefone,
-                    CPF = model.CPF
+                    CPF = Util.RemoveMascara(model.CPF)
                 });
                                
                 return Json("Cadastro alterado com sucesso");
@@ -124,10 +125,8 @@ namespace WebAtividadeEntrevista.Controllers
                     Nome = cliente.Nome,
                     Sobrenome = cliente.Sobrenome,
                     Telefone = cliente.Telefone,
-                    CPF = cliente.CPF
+                    CPF = Util.RemoveMascara(cliente.CPF)
                 };
-
-            
             }
 
             return View(model);
@@ -159,5 +158,146 @@ namespace WebAtividadeEntrevista.Controllers
                 return Json(new { Result = "ERROR", Message = ex.Message });
             }
         }
+
+        [HttpPost]
+        public JsonResult BeneficiarioList(int id)
+        {
+            try
+            {
+                List<Beneficiario> beneficiarios = new BoBeneficiario().Pesquisa(id);
+
+                //Return result to jTable
+                return Json(new { Result = "OK", Records = beneficiarios, TotalRecordCount = 0 });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { Result = "ERROR", Message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult ConsultarBeneficiario(BeneficiarioModel model)
+        {
+            try
+            {
+                var beneficiarios = new BoBeneficiario().Consultar(model.Id);
+
+                //Return result to jTable
+                return Json(new { Result = "OK", Records = beneficiarios });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { Result = "ERROR", Message = ex.Message });
+            }
+        }
+
+
+        public JsonResult IncluirOuAtualizarBeneficiario(BeneficiarioModel model)
+        {
+            BoBeneficiario bo = new BoBeneficiario();
+
+            if (!this.ModelState.IsValid) { }
+
+            else if (!Util.ValidaCPF(model.CPF))
+            {
+                ModelState.AddModelError("CPF", "CPF Inválido");
+            }
+            else if (bo.VerificarExistencia(Util.RemoveMascara(model.CPF)))
+            {
+                ModelState.AddModelError("CPF", "CPF já Cadastrado");
+            }
+
+            if (model.Id != 0 & !this.ModelState.IsValid)
+            {
+                var beneficiario = bo.Consultar(model.Id);
+
+                beneficiario.Nome = model.Nome;
+                beneficiario.CPF = Util.RemoveMascara(model.CPF);
+
+                bo.Alterar(beneficiario);
+
+                return Json("Cadastro efetuado com sucesso");
+            }
+
+            if (!this.ModelState.IsValid)
+            {
+                List<string> erros = (from item in ModelState.Values
+                                      from error in item.Errors
+                                      select error.ErrorMessage).ToList();
+
+                Response.StatusCode = 400;
+                return Json(string.Join(Environment.NewLine, erros));
+            }
+            else
+            {
+
+                model.Id = bo.Incluir(new Beneficiario()
+                {
+                    Nome = model.Nome,
+                    CPF = Util.RemoveMascara(model.CPF),
+                    IdCliente = model.IDCLIENTE
+                });
+
+                return Json("Cadastro efetuado com sucesso");
+            }
+        }
+
+        [HttpPost]
+        public JsonResult AlterarBeneficiario(BeneficiarioModel model)
+        {
+            BoBeneficiario bo = new BoBeneficiario();
+
+            if (!this.ModelState.IsValid)
+            {
+                List<string> erros = (from item in ModelState.Values
+                                      from error in item.Errors
+                                      select error.ErrorMessage).ToList();
+
+                Response.StatusCode = 400;
+                return Json(string.Join(Environment.NewLine, erros));
+            }
+            else
+            {
+                bo.Alterar(new Beneficiario()
+                {
+                    Id = model.Id,
+                    Nome = model.Nome,
+                    CPF = Util.RemoveMascara(model.CPF)
+                });
+
+                return Json("Cadastro alterado com sucesso");
+            }
+        }
+
+        [HttpGet]
+        public ActionResult AlterarBeneficiario(long id)
+        {
+            BoBeneficiario bo = new BoBeneficiario();
+            Beneficiario beneficiario = bo.Consultar(id);
+            Models.BeneficiarioModel model = null;
+
+            if (beneficiario != null)
+            {
+                model = new BeneficiarioModel()
+                {
+                    Id = beneficiario.Id,
+                    Nome = beneficiario.Nome,
+                    CPF = Util.RemoveMascara(beneficiario.CPF)
+                };
+            }
+
+            return View(model);
+        }
+
+
+
+        public JsonResult DeleteBeneficiario(long id)
+        {
+            BoBeneficiario bo = new BoBeneficiario();
+            bo.Excluir(id);
+
+            return Json("Beneficiario excluido com sucesso");
+        }
+
     }
 }
