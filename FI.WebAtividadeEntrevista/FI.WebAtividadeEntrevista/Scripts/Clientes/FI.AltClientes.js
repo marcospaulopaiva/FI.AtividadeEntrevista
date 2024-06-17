@@ -10,7 +10,7 @@ $(document).ready(function () {
         $('#formCadastro #Cidade').val(obj.Cidade);
         $('#formCadastro #Logradouro').val(obj.Logradouro);
         $('#formCadastro #Telefone').val(obj.Telefone);
-        $('#formCadastro #CPF').val(obj.CPF);
+        $('#formCadastro #CPF').val(AdicionaMascaraCPF(obj.CPF));
     }
 
     $('#formCadastro').submit(function (e) {
@@ -46,8 +46,136 @@ $(document).ready(function () {
             }
         });
     })
+
+
+
+    $('#btn-beneficiario').click(function () {
+        $('#modal-beneficiario').modal('show');
+
+        //Load student list from server
+        if (document.getElementById("gridBeneficiario"))
+            $('#gridBeneficiario').jtable('load');
+    });
+
+    if (document.getElementById("gridBeneficiario"))
+        $('#gridBeneficiario').jtable({
+            title: ' ',
+            paging: true, //Enable paging
+            pageSize: 5, //Set page size (default: 10)
+            sorting: true, //Enable sorting
+            defaultSorting: 'Nome ASC', //Set default sorting
+            actions: {
+                listAction: urlBeneficiarioList + '/' + obj.Id
+            },
+            fields: {
+                Nome: {
+                    title: 'Nome',
+                    width: '35%'
+                },
+                CPF: {
+                    title: 'CPF',
+                    width: '35%'
+                },
+                Alterar: {
+                    title: 'Ações',
+                    display: function (data) {
+                        return '<button onclick="javascript:exluirBeneficiario(' + data.record.Id + ')\" class="btn btn-primary btn-sm">Excluir</button>'
+                            + '<button onclick="javascript:consultarBeneficiario(' + data.record.Id + ')\" class="btn btn-primary btn-sm">Alterar</button>'
+                            
+                    }
+                }
+            }
+        });
+
+  
+
+
+    $('#formBeneficiario').submit(function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: urlPostBeneficiario,
+            method: "POST",
+            data: {
+                "NOME": $(this).find("#Nome").val(),
+                "CPF": $(this).find("#CPF").val(),
+                "ID": $(this).find("#id").val(),
+                "IDCLIENTE": obj.Id
+            },
+            error:
+                function (r) {
+                    if (r.status == 400)
+                        ModalDialog("Ocorreu um erro", r.responseJSON);
+                    else if (r.status == 500)
+                        ModalDialog("Ocorreu um erro", "Ocorreu um erro interno no servidor.");
+                },
+            success:
+                function (r) {
+                    ModalDialog("Sucesso!", r)
+                    $("#formBeneficiario")[0].reset();
+
+                    if (document.getElementById("gridBeneficiario"))
+                        $('#gridBeneficiario').jtable('load');
+                }
+        });
+    })
     
 })
+
+function AdicionaMascaraCPF(cpf) {
+    //retira os caracteres indesejados...
+    cpf = cpf.replace(/[^\d]/g, "");
+
+    //realizar a formatação...
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+}
+
+function exluirBeneficiario(id) {
+    $.ajax({
+        url: urlExcluirBeneficiario + '/'+ id,
+        method: "POST",
+        data: {
+            "Id": id
+        },
+        error:
+            function (r) {
+                if (r.status == 400)
+                    ModalDialog("Ocorreu um erro", r.responseJSON);
+                else if (r.status == 500)
+                    ModalDialog("Ocorreu um erro", "Ocorreu um erro interno no servidor.");
+            },
+        success:
+            function (r) {
+                ModalDialog("Sucesso!", r)
+                $("#formBeneficiario")[0].reset();
+
+                if (document.getElementById("gridBeneficiario"))
+                    $('#gridBeneficiario').jtable('load');
+            }
+    });
+}
+
+function consultarBeneficiario(id) {
+    $.ajax({
+        url: urlConsultarBeneficiario + '/' + id,
+        method: "POST",
+        data: {
+            "Id": id
+        },
+        error:
+            function (r) {
+                if (r.status == 400)
+                    ModalDialog("Ocorreu um erro", r.responseJSON);
+                else if (r.status == 500)
+                    ModalDialog("Ocorreu um erro", "Ocorreu um erro interno no servidor.");
+            },
+        success:
+            function (r) {
+                $('#formBeneficiario #CPF').val(AdicionaMascaraCPF(r.Records.CPF));
+                $('#formBeneficiario #Nome').val(r.Records.Nome);
+                $('#formBeneficiario #id').val(r.Records.Id);
+            }
+    });
+}
 
 function ModalDialog(titulo, texto) {
     var random = Math.random().toString().replace('.', '');

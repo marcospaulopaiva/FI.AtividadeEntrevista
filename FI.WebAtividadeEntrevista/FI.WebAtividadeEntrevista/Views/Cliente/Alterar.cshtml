@@ -3,12 +3,62 @@
     ViewBag.Title = "Alterar Cliente";
 }
 @section scripts{
-<script>
+    <script>
         var urlPost = '@Url.Action("Alterar", "Cliente", new { area = "" })';
         var obj = @Html.Raw(Json.Encode(Model));
         var urlRetorno = '@Url.Action("Index", "Cliente", new { area = "" })';
-</script>
+        var urlBeneficiarioList = '@Url.Action("BeneficiarioList", "Cliente", new { area = "" })';
+        var urlPostBeneficiario = '@Url.Action("IncluirOuAtualizarBeneficiario", "Cliente", new { area = "" })';
+        var urlAlteracao = '@Url.Action("Alterar", "Cliente", new { area = "" })';
+        var urlExcluirBeneficiario = '@Url.Action("DeleteBeneficiario", "Cliente", new { area = "" })';
+        var urlConsultarBeneficiario = '@Url.Action("ConsultarBeneficiario", "Cliente", new { area = "" })';
+    </script>
     @Scripts.Render("~/bundles/altClientes")
 }
 <h2>@Html.Raw(ViewBag.Title)</h2>
+<div id="modal-beneficiario" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title">Beneficiario</h4>
+            </div>
+            <div class="modal-body">
+                <form id="formBeneficiario" method="post">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="Sobrenome">CPF:</label>
+                                <input required="required" type="text" class="form-control" id="CPF" name="CPF" placeholder="Ex.: 010.011.111-00" maxlength="255">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="Nome">Nome:</label>
+                                <input required="required" type="text" class="form-control" id="Nome" name="Nome" placeholder="Ex.: Maria" maxlength="50">
+                                <input  type="hidden" value="0" id="id" name="id">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4" style="padding-top:26px">
+                            <button type="submit" class="btn btn-sm btn-success">Incluir</button>
+                        </div>
+                    </div>
+                </form>
+                <br>
+                <table id="gridBeneficiario" class="table"></table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @Html.Partial("Forms")
+
+<div class="row">
+    <div class="pull-left col-md-12">
+        <button id="btn-beneficiario" type="button" class="btn btn-primary" data-toggle="modal">Beneficiários</button>
+    </div>
+</div>
